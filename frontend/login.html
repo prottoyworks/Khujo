@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Khujo</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo__name">Khujo</div>
+        <div class="login-logo__tagline">Lost &amp; Found Persons Registry</div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn tab-btn--active" id="tab-signin"
+                type="button" role="tab" aria-selected="true"
+                aria-controls="panel-signin">Sign In</button>
+        <button class="tab-btn" id="tab-signup"
+                type="button" role="tab" aria-selected="false"
+                aria-controls="panel-signup">Create Account</button>
+      </div>
+
+      <div id="auth-error" class="form-error" hidden></div>
+
+      <!-- ── Sign in panel ──────────────────────────────────── -->
+      <form class="form-stack tab-panel tab-panel--active" id="panel-signin"
+            role="tabpanel" aria-labelledby="tab-signin" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="signin-username">Username</label>
+          <input class="form-input" type="text" id="signin-username"
+                 placeholder="Enter username" autocomplete="username"
+                 autocapitalize="off" spellcheck="false" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signin-password">Password</label>
+          <input class="form-input" type="password" id="signin-password"
+                 placeholder="Enter password" autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full" id="signin-btn">
+          Sign In
+        </button>
+      </form>
+
+      <!-- ── Create account panel ───────────────────────────── -->
+      <form class="form-stack tab-panel" id="panel-signup"
+            role="tabpanel" aria-labelledby="tab-signup" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="signup-fullname">Full Name <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="text" id="signup-fullname"
+                 placeholder="Your full name" autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-phone">Phone</label>
+          <input class="form-input" type="tel" id="signup-phone"
+                 placeholder="e.g. 01711-000000" autocomplete="tel" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-username">Username <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="text" id="signup-username"
+                 placeholder="Pick a username" autocomplete="username"
+                 autocapitalize="off" spellcheck="false" />
+          <span style="font-size:11px;color:var(--text-3);margin-top:4px;display:block">
+            3–30 characters · lowercase letters, digits, underscore
+          </span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Password <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="password" id="signup-password"
+                 placeholder="At least 6 characters" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password2">Confirm Password <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="password" id="signup-password2"
+                 placeholder="Re-enter password" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full" id="signup-btn">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // If already logged in, skip the form entirely.
+    if (API.getToken()) {
+      window.location.replace('index.html');
+    }
+
+    const USERNAME_RE = /^[a-z0-9_]{3,30}$/;
+    const PASSWORD_MIN = 6;
+    const errEl = document.getElementById('auth-error');
+
+    // ── Tab switching ──────────────────────────────────────
+    const tabs = {
+      signin: {
+        btn: document.getElementById('tab-signin'),
+        panel: document.getElementById('panel-signin'),
+      },
+      signup: {
+        btn: document.getElementById('tab-signup'),
+        panel: document.getElementById('panel-signup'),
+      },
+    };
+
+    function activate(name) {
+      errEl.hidden = true;
+      for (const key of Object.keys(tabs)) {
+        const active = key === name;
+        tabs[key].btn.classList.toggle('tab-btn--active', active);
+        tabs[key].btn.setAttribute('aria-selected', String(active));
+        tabs[key].panel.classList.toggle('tab-panel--active', active);
+      }
+    }
+
+    tabs.signin.btn.addEventListener('click', () => activate('signin'));
+    tabs.signup.btn.addEventListener('click', () => activate('signup'));
+
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.hidden = false;
+    }
+
+    function setBusy(form, busy) {
+      form.querySelectorAll('button, input').forEach((el) => {
+        el.disabled = busy;
+      });
+    }
+
+    // ── Sign in ────────────────────────────────────────────
+    document.getElementById('panel-signin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const username = document.getElementById('signin-username').value.trim().toLowerCase();
+      const password = document.getElementById('signin-password').value;
+      errEl.hidden = true;
+
+      if (!username || !password) {
+        showError('Please enter both username and password.');
+        return;
+      }
+
+      setBusy(form, true);
+      try {
+        await API.login(username, password);
+        window.location.replace('index.html');
+      } catch (err) {
+        showError(err.message);
+        setBusy(form, false);
+        document.getElementById('signin-password').value = '';
+        document.getElementById('signin-password').focus();
+      }
+    });
+
+    // ── Create account ─────────────────────────────────────
+    document.getElementById('panel-signup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+
+      const fullName = document.getElementById('signup-fullname').value.trim();
+      const phone    = document.getElementById('signup-phone').value.trim();
+      const username = document.getElementById('signup-username').value.trim().toLowerCase();
+      const password = document.getElementById('signup-password').value;
+      const confirm  = document.getElementById('signup-password2').value;
+      errEl.hidden = true;
+
+      // Client-side validation mirrors backend rules so the user gets
+      // instant feedback instead of a server round-trip on typos.
+      if (!fullName) {
+        showError('Please enter your full name.');
+        return;
+      }
+      if (!USERNAME_RE.test(username)) {
+        showError('Username must be 3–30 characters, lowercase letters, digits, or underscore.');
+        return;
+      }
+      if (password.length < PASSWORD_MIN) {
+        showError(`Password must be at least ${PASSWORD_MIN} characters.`);
+        return;
+      }
+      if (password !== confirm) {
+        showError('Passwords do not match.');
+        document.getElementById('signup-password2').value = '';
+        document.getElementById('signup-password2').focus();
+        return;
+      }
+
+      setBusy(form, true);
+      try {
+        await API.register(username, password, { fullName, phone });
+        window.location.replace('index.html');
+      } catch (err) {
+        showError(err.message);
+        setBusy(form, false);
+        document.getElementById('signup-password').value = '';
+        document.getElementById('signup-password2').value = '';
+        document.getElementById('signup-password').focus();
+      }
+    });
+  </script>
+</body>
+</html>

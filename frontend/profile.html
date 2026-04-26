@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Khujo</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <div id="toast-container" class="toast-container"></div>
+
+  <main class="page-content">
+    <div class="container" style="max-width:720px">
+      <div class="page-header">
+        <div class="page-header__left">
+          <a href="index.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back
+          </a>
+          <h1 class="page-title">My Profile</h1>
+        </div>
+      </div>
+
+      <!-- Identity Documents -->
+      <div class="form-card" style="margin-bottom:var(--s6)">
+        <div class="section-header" style="margin-bottom:var(--s4)">
+          <div class="section-title">Identity Documents</div>
+          <span style="font-size:12px;color:var(--text-3)">Used to verify your identity when reporting</span>
+        </div>
+        <div class="profile-photos">
+          <div class="profile-photo-item">
+            <label>NID Photo</label>
+            <div class="profile-photo-frame" id="nid-frame" title="Click to upload NID photo">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <path d="M2 10h20"/>
+                <path d="M6 15h4M14 15h4"/>
+              </svg>
+            </div>
+            <input type="file" id="nid-input" accept="image/*" style="display:none" />
+          </div>
+          <div class="profile-photo-item">
+            <label>Selfie</label>
+            <div class="profile-photo-frame" id="selfie-frame" title="Click to upload selfie">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <input type="file" id="selfie-input" accept="image/*" style="display:none" />
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text-3);margin-top:var(--s2)">
+          Documents are stored locally on this device only.
+        </p>
+      </div>
+
+      <!-- Profile Info -->
+      <div class="form-card form-stack" style="margin-bottom:var(--s6)">
+        <div class="section-title" style="margin-bottom:var(--s2)">Personal Information</div>
+        <div class="form-group">
+          <label class="form-label" for="full-name">Full Name</label>
+          <input class="form-input" type="text" id="full-name" placeholder="Your full name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input class="form-input" type="tel" id="phone" placeholder="e.g. 01711-000000" />
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn--primary" id="save-profile-btn">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Family Members -->
+      <div class="section-header">
+        <div class="section-title">Family Members</div>
+        <a href="family-add.html" class="btn btn--outline btn--sm">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Member
+        </a>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:var(--s4)">
+        Saved family members can be quickly selected when filing a missing report.
+      </p>
+      <div id="family-grid" class="card-grid card-grid--wide"></div>
+    </div>
+  </main>
+
+  <!-- Confirm Delete Modal -->
+  <div id="modal-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/alerts.js"></script>
+  <script>
+    if (!Auth.guard()) throw new Error('redirect');
+    Utils.renderNav();
+
+    // Keep a local cache of family members for the delete modal
+    let familyCache = [];
+
+    // ── Load saved profile ────────────────────────────────────
+    async function loadProfile() {
+      try {
+        const p = await API.getProfile();
+        if (!p) return;
+        document.getElementById('full-name').value = p.fullName || '';
+        document.getElementById('phone').value     = p.phone    || '';
+        if (p.nidPhoto) {
+          document.getElementById('nid-frame').innerHTML =
+            `<img src="${p.nidPhoto}" alt="NID Photo">`;
+        }
+        if (p.selfiePhoto) {
+          document.getElementById('selfie-frame').innerHTML =
+            `<img src="${p.selfiePhoto}" alt="Selfie">`;
+        }
+      } catch {
+        // Profile not loaded — that's OK
+      }
+    }
+
+    // ── Photo uploads ─────────────────────────────────────────
+    document.getElementById('nid-frame').addEventListener('click', () =>
+      document.getElementById('nid-input').click()
+    );
+    document.getElementById('selfie-frame').addEventListener('click', () =>
+      document.getElementById('selfie-input').click()
+    );
+
+    document.getElementById('nid-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const data = await Utils.fileToBase64(file, 800, 500);
+        await API.updateProfile({ nidPhoto: data });
+        document.getElementById('nid-frame').innerHTML = `<img src="${data}" alt="NID Photo">`;
+        Alerts.showToast('NID photo saved.', 'success');
+      } catch {
+        Alerts.showToast('Could not process image.', 'danger');
+      }
+    });
+
+    document.getElementById('selfie-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const data = await Utils.fileToBase64(file, 400, 400);
+        await API.updateProfile({ selfiePhoto: data });
+        document.getElementById('selfie-frame').innerHTML = `<img src="${data}" alt="Selfie">`;
+        Alerts.showToast('Selfie saved.', 'success');
+      } catch {
+        Alerts.showToast('Could not process image.', 'danger');
+      }
+    });
+
+    // ── Save profile info ─────────────────────────────────────
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const fullName = document.getElementById('full-name').value.trim();
+      const phone    = document.getElementById('phone').value.trim();
+      try {
+        await API.updateProfile({ fullName, phone });
+        Alerts.showToast('Profile saved.', 'success');
+      } catch (err) {
+        Alerts.showToast(err.message, 'danger');
+      }
+    });
+
+    // ── Family grid ───────────────────────────────────────────
+    async function renderFamilyGrid() {
+      const grid = document.getElementById('family-grid');
+
+      try {
+        familyCache = await API.getFamilyMembers();
+      } catch {
+        familyCache = [];
+      }
+
+      const members = familyCache;
+
+      if (members.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;padding:var(--s8) var(--s4)">
+            <div class="empty-state__icon">
+              <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="empty-state__title">No family members added</div>
+            <div class="empty-state__body">Add family members to speed up missing person reports.</div>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = members.map(m => `
+        <div class="id-card">
+          <div class="id-card__top">
+            ${m.photo
+              ? `<img src="${Utils.escapeHtml(m.photo)}" alt="${Utils.escapeHtml(m.name)}" class="id-card__photo">`
+              : `<div class="id-card__photo id-card__photo--placeholder">
+                   <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                   </svg>
+                 </div>`
+            }
+            <div class="id-card__name">${Utils.escapeHtml(m.name)}</div>
+            <div class="id-card__subtitle">
+              <span class="id-card__relation">${Utils.escapeHtml(m.relationship || '')}</span>
+            </div>
+          </div>
+          <div class="id-card__divider"></div>
+          <div class="id-card__info">
+            <div class="id-card__info-row">
+              <span class="id-card__label">Description</span>
+              <span class="id-card__value">${Utils.escapeHtml((m.description || '—').slice(0, 60))}${m.description && m.description.length > 60 ? '…' : ''}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--s2);padding:var(--s2) var(--s4) var(--s4)">
+            <a href="family-add.html?edit=${Utils.escapeHtml(m.id)}"
+               class="btn btn--outline btn--sm" style="flex:1;justify-content:center">Edit</a>
+            <button class="btn btn--outline btn--sm delete-member-btn"
+                    data-id="${Utils.escapeHtml(m.id)}"
+                    style="flex:1;color:var(--danger);border-color:var(--danger-border)">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.delete-member-btn').forEach(btn => {
+        btn.addEventListener('click', () => confirmDelete(btn.dataset.id));
+      });
+    }
+
+    function confirmDelete(memberId) {
+      const member = familyCache.find(m => m.id === memberId);
+      if (!member) return;
+      const modalContainer = document.getElementById('modal-container');
+      modalContainer.innerHTML = `
+        <div class="modal-overlay" id="del-modal-overlay">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal__header">
+              <div class="modal__title">Remove Family Member</div>
+              <button class="modal__close" id="del-close">&times;</button>
+            </div>
+            <div class="modal__body">
+              <p style="font-size:14px;color:var(--text-1);line-height:1.6">
+                Remove <strong>${Utils.escapeHtml(member.name)}</strong> from your family list?
+              </p>
+            </div>
+            <div class="modal__footer">
+              <button class="btn btn--outline" id="del-cancel">Cancel</button>
+              <button class="btn btn--danger" id="del-confirm">Remove</button>
+            </div>
+          </div>
+        </div>`;
+
+      const close = () => { modalContainer.innerHTML = ''; };
+      document.getElementById('del-close').addEventListener('click', close);
+      document.getElementById('del-cancel').addEventListener('click', close);
+      document.getElementById('del-modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('del-modal-overlay')) close();
+      });
+      document.getElementById('del-confirm').addEventListener('click', async () => {
+        try {
+          await API.deleteFamilyMember(memberId);
+          close();
+          renderFamilyGrid();
+          Alerts.showToast('Family member removed.', 'info');
+        } catch (err) {
+          Alerts.showToast(err.message, 'danger');
+        }
+      });
+    }
+
+    loadProfile();
+    renderFamilyGrid();
+  </script>
+</body>
+</html>

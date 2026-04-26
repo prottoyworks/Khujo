@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Khujo | Search Bulletin</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            :root {
+                --page-bg: #07080a;
+                --paper: rgba(13, 16, 21, 0.9);
+                --ink: #eef1f4;
+                --muted: #9fa7b4;
+                --line: rgba(143, 53, 53, 0.18);
+                --accent: #8f3535;
+                --accent-deep: #c98d8d;
+                --accent-soft: rgba(143, 53, 53, 0.14);
+                --support: #8cad98;
+                --support-soft: rgba(140, 173, 152, 0.14);
+                --shadow: 0 28px 90px rgba(0, 0, 0, 0.36);
+                --radius-xl: 24px;
+                --radius-lg: 16px;
+                --radius-md: 12px;
+                --content-width: 1240px;
+            }
+
+            body.search-bulletin {
+                font-family: "IBM Plex Sans", sans-serif;
+                color: var(--ink);
+                background:
+                    radial-gradient(
+                        circle at top left,
+                        rgba(143, 53, 53, 0.12),
+                        transparent 32%
+                    ),
+                    radial-gradient(
+                        circle at 85% 20%,
+                        rgba(209, 111, 103, 0.09),
+                        transparent 28%
+                    ),
+                    linear-gradient(
+                        180deg,
+                        #0a0b0d 0%,
+                        #07080a 38%,
+                        #050608 100%
+                    );
+                position: relative;
+                overflow-x: hidden;
+            }
+
+            body.search-bulletin::before,
+            body.search-bulletin::after {
+                content: "";
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            body.search-bulletin::before {
+                background:
+                    linear-gradient(
+                        rgba(255, 255, 255, 0.03) 1px,
+                        transparent 1px
+                    ),
+                    linear-gradient(
+                        90deg,
+                        rgba(255, 255, 255, 0.022) 1px,
+                        transparent 1px
+                    );
+                background-size: 28px 28px;
+                mask-image: radial-gradient(
+                    circle at center,
+                    black 45%,
+                    transparent 90%
+                );
+                opacity: 0.75;
+            }
+
+            body.search-bulletin::after {
+                background-image: radial-gradient(
+                    rgba(255, 255, 255, 0.05) 0.7px,
+                    transparent 0.7px
+                );
+                background-size: 14px 14px;
+                opacity: 0.18;
+            }
+
+            .nav {
+                background: rgba(7, 8, 11, 0.8);
+                backdrop-filter: blur(18px);
+                border-bottom: 1px solid rgba(143, 53, 53, 0.14);
+                box-shadow: none;
+            }
+
+            .nav__brand {
+                font-family: "Cormorant Garamond", serif;
+                font-size: 1.8rem;
+                letter-spacing: 0.05em;
+            }
+
+            .bulletin-shell {
+                position: relative;
+                z-index: 1;
+                max-width: var(--content-width);
+                margin: 0 auto;
+                padding: 0 24px 96px;
+            }
+
+            .page-content.search-home {
+                padding-top: calc(var(--nav-h) + 26px);
+                padding-bottom: 0;
+                min-height: auto;
+            }
+
+            .headline-strip {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px 18px;
+                margin-bottom: 18px;
+                padding: 12px 18px;
+                border: 1px solid var(--line);
+                border-radius: 14px;
+                background: rgba(16, 19, 25, 0.8);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                font-size: 0.72rem;
+                font-weight: 800;
+                color: var(--muted);
+            }
+
+            .headline-strip strong {
+                color: var(--accent-deep);
+            }
+
+            .hero-board {
+                display: grid;
+                grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
+                gap: 22px;
+                margin-bottom: 22px;
+            }
+
+            .hero-panel,
+            .action-panel,
+            .insight-panel,
+            .cases-panel,
+            .metric-card,
+            .focus-card {
+                position: relative;
+                overflow: hidden;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-xl);
+                background: var(--paper);
+                box-shadow: var(--shadow);
+                backdrop-filter: blur(8px);
+            }
+
+            .hero-panel {
+                padding: 34px;
+                min-height: 430px;
+                display: grid;
+                align-content: space-between;
+                background:
+                    linear-gradient(
+                        135deg,
+                        rgba(20, 23, 29, 0.98),
+                        rgba(10, 13, 17, 0.96)
+                    ),
+                    radial-gradient(
+                        circle at top right,
+                        rgba(143, 53, 53, 0.12),
+                        transparent 30%
+                    );
+            }
+
+            .hero-panel::after {
+                content: "";
+                position: absolute;
+                right: -42px;
+                top: 58px;
+                width: 180px;
+                height: 180px;
+                border-radius: 38px;
+                border: 1px solid rgba(143, 53, 53, 0.16);
+                background: linear-gradient(
+                    145deg,
+                    rgba(143, 53, 53, 0.08),
+                    rgba(255, 255, 255, 0.03)
+                );
+                transform: rotate(18deg);
+            }
+
+            .eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                width: fit-content;
+                padding: 10px 16px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.04);
+                font-size: 0.74rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+
+            .eyebrow::before {
+                content: "";
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--accent);
+                box-shadow: 0 0 0 6px rgba(143, 53, 53, 0.14);
+            }
+
+            .hero-copy {
+                position: relative;
+                z-index: 1;
+                max-width: 720px;
+                margin-top: 22px;
+            }
+
+            .hero-copy h1 {
+                font-family: "Cormorant Garamond", serif;
+                font-size: clamp(2.8rem, 4.8vw, 4.8rem);
+                line-height: 0.93;
+                font-weight: 600;
+                letter-spacing: -0.03em;
+                text-wrap: balance;
+            }
+
+            .hero-copy p {
+                max-width: 52ch;
+                margin-top: 18px;
+                color: var(--muted);
+                font-size: 1.04rem;
+                line-height: 1.8;
+            }
+
+            .hero-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 14px;
+                margin-top: 28px;
+            }
+
+            .bullet-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                min-height: 54px;
+                padding: 0 22px;
+                border-radius: 12px;
+                border: 1px solid transparent;
+                font-size: 0.95rem;
+                font-weight: 800;
+                letter-spacing: 0.01em;
+                transition:
+                    transform 180ms ease,
+                    box-shadow 180ms ease,
+                    border-color 180ms ease,
+                    background 180ms ease;
+            }
+
+            .bullet-btn:hover,
+            .bullet-btn:focus-visible {
+                transform: translateY(-2px);
+                box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+            }
+
+            .bullet-btn--primary {
+                background: var(--accent);
+                color: #140f09;
+            }
+
+            .bullet-btn--secondary {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--ink);
+                border-color: rgba(211, 176, 122, 0.18);
+            }
+
+            .hero-footer {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 14px;
+                margin-top: 34px;
+                position: relative;
+                z-index: 1;
+            }
+
+            .metric-card {
+                padding: 18px 18px 20px;
+                border-radius: var(--radius-lg);
+                background: rgba(255, 255, 255, 0.035);
+                box-shadow: none;
+            }
+
+            .metric-card span {
+                display: block;
+                font-size: 0.72rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                font-weight: 800;
+                color: var(--muted);
+            }
+
+            .metric-card strong {
+                display: block;
+                margin-top: 8px;
+                font-size: clamp(1.8rem, 3vw, 2.6rem);
+                font-weight: 800;
+                line-height: 1;
+            }
+
+            .metric-card p {
+                margin-top: 6px;
+                color: var(--muted);
+                font-size: 0.92rem;
+                line-height: 1.5;
+            }
+
+            .action-panel {
+                padding: 26px;
+                background:
+                    linear-gradient(
+                        180deg,
+                        rgba(16, 18, 24, 0.98),
+                        rgba(8, 10, 13, 1)
+                    ),
+                    linear-gradient(
+                        135deg,
+                        rgba(211, 176, 122, 0.1),
+                        rgba(126, 164, 140, 0.08)
+                    );
+                color: #f2f3f5;
+                display: grid;
+                gap: 18px;
+            }
+
+            .action-panel::after {
+                content: "";
+                position: absolute;
+                inset: auto -40px -54px auto;
+                width: 210px;
+                height: 210px;
+                border-radius: 50%;
+                background: radial-gradient(
+                    circle,
+                    rgba(211, 176, 122, 0.22),
+                    transparent 68%
+                );
+                pointer-events: none;
+            }
+
+            .action-panel h2,
+            .insight-panel h2,
+            .cases-heading h2 {
+                font-family: "Cormorant Garamond", serif;
+                font-size: clamp(1.9rem, 2.5vw, 2.6rem);
+                line-height: 1;
+                letter-spacing: -0.02em;
+            }
+
+            .action-panel p,
+            .insight-panel p,
+            .cases-heading p {
+                color: inherit;
+                opacity: 0.8;
+                line-height: 1.7;
+            }
+
+            .action-list {
+                display: grid;
+                gap: 12px;
+                margin-top: 8px;
+            }
+
+            .action-list a {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 18px;
+                padding: 16px 18px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                transition:
+                    transform 180ms ease,
+                    background 180ms ease,
+                    border-color 180ms ease;
+            }
+
+            .action-list a:hover,
+            .action-list a:focus-visible {
+                transform: translateX(4px);
+                background: rgba(255, 255, 255, 0.06);
+                border-color: rgba(211, 176, 122, 0.2);
+            }
+
+            .action-list strong {
+                display: block;
+                font-size: 1rem;
+                font-weight: 800;
+                color: #f4f5f6;
+            }
+
+            .action-list span {
+                display: block;
+                margin-top: 4px;
+                color: rgba(237, 240, 244, 0.68);
+                font-size: 0.88rem;
+                line-height: 1.5;
+            }
+
+            .action-list em {
+                font-style: normal;
+                font-size: 1.35rem;
+                opacity: 0.88;
+            }
+
+            .insight-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+                gap: 22px;
+                margin-bottom: 22px;
+            }
+
+            .insight-panel {
+                padding: 28px;
+                background: linear-gradient(
+                    180deg,
+                    rgba(17, 20, 25, 0.96),
+                    rgba(11, 14, 18, 0.96)
+                );
+            }
+
+            .focus-card {
+                padding: 22px;
+                border-radius: var(--radius-lg);
+                background: rgba(255, 255, 255, 0.03);
+                box-shadow: none;
+            }
+
+            .focus-card + .focus-card {
+                margin-top: 14px;
+            }
+
+            .focus-card__label {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 7px 11px;
+                border-radius: 12px;
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                background: var(--accent-soft);
+                color: var(--accent-deep);
+            }
+
+            .focus-card__label--support {
+                background: var(--support-soft);
+                color: var(--support);
+            }
+
+            .focus-card h3 {
+                margin-top: 16px;
+                font-family: "Cormorant Garamond", serif;
+                font-size: 1.6rem;
+                line-height: 1.02;
+                letter-spacing: -0.03em;
+            }
+
+            .focus-card p {
+                margin-top: 10px;
+                color: var(--muted);
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+
+            .focus-card ul {
+                list-style: none;
+                display: grid;
+                gap: 10px;
+                margin-top: 18px;
+                padding: 0;
+                color: var(--muted);
+            }
+
+            .focus-card li {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                font-size: 0.93rem;
+                line-height: 1.6;
+            }
+
+            .focus-card li::before {
+                content: "•";
+                color: var(--accent);
+                font-size: 1.2rem;
+                line-height: 1;
+                margin-top: 1px;
+            }
+
+            .cases-panel {
+                padding: 28px;
+                background: linear-gradient(
+                    180deg,
+                    rgba(17, 20, 25, 0.96),
+                    rgba(10, 13, 17, 0.96)
+                );
+            }
+
+            .cases-heading {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 16px;
+                align-items: end;
+                margin-bottom: 24px;
+            }
+
+            .cases-heading p {
+                max-width: 54ch;
+                color: var(--muted);
+            }
+
+            .tab-switch {
+                display: inline-flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 7px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.04);
+            }
+
+            .bullet-tab {
+                min-height: 48px;
+                padding: 0 18px;
+                border: 0;
+                border-radius: 12px;
+                background: transparent;
+                color: var(--muted);
+                font-size: 0.92rem;
+                font-weight: 800;
+                letter-spacing: 0.01em;
+                transition:
+                    background 160ms ease,
+                    color 160ms ease,
+                    transform 160ms ease;
+            }
+
+            .bullet-tab--active {
+                background: rgba(211, 176, 122, 0.14);
+                color: var(--ink);
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+            }
+
+            .bullet-tab:hover,
+            .bullet-tab:focus-visible {
+                transform: translateY(-1px);
+            }
+
+            .tab-panel {
+                display: none;
+            }
+
+            .tab-panel--active {
+                display: block;
+                animation: rise 280ms ease;
+            }
+
+            @keyframes rise {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .case-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 18px;
+            }
+
+            .case-card {
+                position: relative;
+                display: grid;
+                gap: 18px;
+                padding: 20px;
+                border-radius: 18px;
+                border: 1px solid rgba(211, 176, 122, 0.12);
+                background: rgba(10, 13, 17, 0.88);
+                box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+                cursor: pointer;
+                transition:
+                    transform 180ms ease,
+                    box-shadow 180ms ease,
+                    border-color 180ms ease;
+            }
+
+            .case-card:hover,
+            .case-card:focus-visible {
+                transform: translateY(-4px);
+                box-shadow: 0 24px 50px rgba(0, 0, 0, 0.34);
+                border-color: rgba(211, 176, 122, 0.24);
+                outline: none;
+            }
+
+            .case-card__status {
+                position: absolute;
+                top: 18px;
+                right: 18px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                border-radius: 12px;
+                font-size: 0.67rem;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                background: rgba(209, 111, 103, 0.14);
+                color: var(--accent-deep);
+            }
+
+            .case-card__status::before {
+                content: "";
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: currentColor;
+            }
+
+            .case-card__status--support {
+                background: rgba(31, 92, 79, 0.12);
+                color: var(--support);
+            }
+
+            .case-card__top {
+                display: grid;
+                grid-template-columns: 96px minmax(0, 1fr);
+                gap: 16px;
+                padding-right: 88px;
+                align-items: start;
+            }
+
+            .case-card__photo,
+            .case-card__placeholder {
+                width: 96px;
+                height: 118px;
+                border-radius: 12px;
+                object-fit: cover;
+                object-position: center;
+                background: linear-gradient(180deg, #1d232c, #11161d);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            }
+
+            .case-card__placeholder {
+                display: grid;
+                place-items: center;
+                color: rgba(237, 240, 244, 0.34);
+            }
+
+            .case-card__kicker {
+                display: inline-block;
+                margin-top: 6px;
+                color: var(--muted);
+                font-size: 0.75rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+            }
+
+            .case-card__name {
+                margin-top: 8px;
+                font-family: "Cormorant Garamond", serif;
+                font-size: 1.85rem;
+                line-height: 0.95;
+                letter-spacing: -0.03em;
+            }
+
+            .case-card__desc {
+                color: var(--muted);
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+
+            .case-card__meta {
+                display: grid;
+                gap: 11px;
+                padding-top: 2px;
+            }
+
+            .case-card__row {
+                display: grid;
+                grid-template-columns: 88px minmax(0, 1fr);
+                gap: 10px;
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+
+            .case-card__row span:first-child {
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.09em;
+                font-size: 0.7rem;
+                font-weight: 800;
+                padding-top: 2px;
+            }
+
+            .case-card__signal {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                width: fit-content;
+                padding: 8px 12px;
+                border-radius: 12px;
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--muted);
+            }
+
+            .case-card__signal--support {
+                background: var(--support-soft);
+                color: var(--support);
+            }
+
+            .empty-board {
+                display: grid;
+                place-items: center;
+                min-height: 280px;
+                padding: 24px;
+                text-align: center;
+                border-radius: 18px;
+                border: 1px dashed rgba(211, 176, 122, 0.18);
+                background: rgba(255, 255, 255, 0.03);
+                color: var(--muted);
+            }
+
+            .empty-board strong {
+                display: block;
+                margin-bottom: 10px;
+                color: var(--ink);
+                font-family: "Cormorant Garamond", serif;
+                font-size: 1.5rem;
+                letter-spacing: -0.03em;
+            }
+
+            .section-reveal {
+                opacity: 0;
+                transform: translateY(24px);
+                animation: sectionReveal 720ms cubic-bezier(0.2, 0.7, 0.2, 1)
+                    forwards;
+            }
+
+            .section-reveal:nth-child(1) {
+                animation-delay: 40ms;
+            }
+            .section-reveal:nth-child(2) {
+                animation-delay: 120ms;
+            }
+            .section-reveal:nth-child(3) {
+                animation-delay: 200ms;
+            }
+            .section-reveal:nth-child(4) {
+                animation-delay: 280ms;
+            }
+
+            @keyframes sectionReveal {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @media (max-width: 1100px) {
+                .hero-board,
+                .insight-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .case-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 760px) {
+                .bulletin-shell {
+                    padding: 0 16px 72px;
+                }
+
+                .headline-strip {
+                    border-radius: 16px;
+                }
+
+                .hero-panel,
+                .action-panel,
+                .insight-panel,
+                .cases-panel {
+                    padding: 22px;
+                    border-radius: 18px;
+                }
+
+                .hero-copy h1 {
+                    font-size: clamp(2.5rem, 14vw, 4rem);
+                }
+
+                .hero-footer,
+                .case-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .case-card__top {
+                    grid-template-columns: 78px minmax(0, 1fr);
+                    padding-right: 0;
+                }
+
+                .case-card__photo,
+                .case-card__placeholder {
+                    width: 78px;
+                    height: 96px;
+                    border-radius: 12px;
+                }
+
+                .case-card__status {
+                    position: static;
+                    width: fit-content;
+                }
+
+                .case-card__name {
+                    font-size: 1.5rem;
+                }
+
+                .cases-heading {
+                    align-items: stretch;
+                }
+
+                .tab-switch {
+                    width: 100%;
+                }
+
+                .bullet-tab {
+                    flex: 1 1 160px;
+                }
+            }
+        </style>
+    </head>
+    <body class="search-bulletin">
+        <div id="nav-placeholder"></div>
+        <div id="toast-container" class="toast-container"></div>
+
+        <main class="page-content search-home">
+            <div class="bulletin-shell">
+                <section
+                    class="headline-strip section-reveal"
+                    aria-label="Live search activity"
+                >
+                    <div>
+                        <strong id="headline-open-count">0</strong> open search
+                        bulletins
+                    </div>
+                    <div>
+                        <strong id="headline-sighting-count">0</strong> active
+                        sighting leads
+                    </div>
+                    <div>Dark operations board for missing-person response</div>
+                </section>
+
+                <section class="hero-board section-reveal">
+                    <article class="hero-panel">
+                        <div>
+                            <div class="eyebrow">Live Search Desk</div>
+                            <div class="hero-copy">
+                                <h1>
+                                    Serious cases need a colder, clearer
+                                    command surface.
+                                </h1>
+                                <p>
+                                    Khujo now reads like an incident board:
+                                    stark, immediate, and built to keep open
+                                    cases, credible leads, and family action
+                                    paths in constant view.
+                                </p>
+                                <div class="hero-actions">
+                                    <a
+                                        href="report.html"
+                                        class="bullet-btn bullet-btn--primary"
+                                        >Open a missing-person file</a
+                                    >
+                                    <a
+                                        href="profile.html"
+                                        class="bullet-btn bullet-btn--secondary"
+                                        >Your profile</a
+                                    >
+                                    <a
+                                        href="#case-board"
+                                        class="bullet-btn bullet-btn--secondary"
+                                        >Scan the live board</a
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-footer">
+                            <div class="metric-card">
+                                <span>Open Cases</span>
+                                <strong id="metric-open">0</strong>
+                                <p>
+                                    Reports that still need fresh sightings and
+                                    public visibility.
+                                </p>
+                            </div>
+                            <div class="metric-card">
+                                <span>Verified Reunions</span>
+                                <strong id="metric-closed">0</strong>
+                                <p>
+                                    Cases marked resolved after trusted
+                                    confirmation.
+                                </p>
+                            </div>
+                            <div class="metric-card">
+                                <span>Community Leads</span>
+                                <strong id="metric-leads">0</strong>
+                                <p>
+                                    Submitted sightings that can guide the next
+                                    family check.
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <aside class="action-panel">
+                        <div>
+                            <h2>Field Actions</h2>
+                            <p>
+                                The first moves stay visible under pressure:
+                                file a case, prepare family records, and keep
+                                your response desk current without navigation
+                                noise.
+                            </p>
+                        </div>
+                        <div class="action-list">
+                            <a href="report.html">
+                                <div>
+                                    <strong>File a missing report</strong>
+                                    <span
+                                        >Open a formal case with photo,
+                                        description, clothing, and last known
+                                        location.</span
+                                    >
+                                </div>
+                                <em>01</em>
+                            </a>
+                            <a href="family-add.html">
+                                <div>
+                                    <strong>Build family records</strong>
+                                    <span
+                                        >Keep relatives documented before the
+                                        next emergency so repeat reporting is
+                                        faster.</span
+                                    >
+                                </div>
+                                <em>02</em>
+                            </a>
+                            <a href="profile.html">
+                                <div>
+                                    <strong>Review your desk</strong>
+                                    <span
+                                        >Maintain identity documents, profile
+                                        details, and household case
+                                        context.</span
+                                    >
+                                </div>
+                                <em>03</em>
+                            </a>
+                        </div>
+                    </aside>
+                </section>
+
+                <section class="cases-panel section-reveal" id="case-board">
+                    <div class="cases-heading">
+                        <div>
+                            <h2>Case Board</h2>
+                            <p>
+                                Start with unresolved files, then review cases
+                                with incoming leads or confirmed closure.
+                            </p>
+                        </div>
+                        <div
+                            class="tab-switch"
+                            id="tabs"
+                            role="tablist"
+                            aria-label="Case board tabs"
+                        >
+                            <button
+                                class="bullet-tab bullet-tab--active"
+                                data-tab="missing"
+                                role="tab"
+                                aria-selected="true"
+                            >
+                                Still Missing
+                            </button>
+                            <button
+                                class="bullet-tab"
+                                data-tab="found"
+                                role="tab"
+                                aria-selected="false"
+                            >
+                                Sightings &amp; Closed
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        id="tab-missing"
+                        class="tab-panel tab-panel--active"
+                        role="tabpanel"
+                    >
+                        <div class="case-grid" id="missing-grid"></div>
+                    </div>
+
+                    <div id="tab-found" class="tab-panel" role="tabpanel">
+                        <div class="case-grid" id="found-grid"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <script src="js/api.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/alerts.js"></script>
+        <script>
+            if (!Auth.guard()) throw new Error("redirect");
+            Utils.renderNav();
+
+            // Page data — filled by init()
+            let lostReports = [];
+            let allFoundReports = [];
+            let foundIds = new Set();
+            let openCases = [];
+            let boardCases = [];
+
+            (async () => {
+              try {
+                lostReports = await API.getLostReports();
+                allFoundReports = await API.getFoundReports();
+              } catch (err) {
+                Alerts.showToast('Could not load data: ' + err.message, 'danger');
+                return;
+              }
+
+              foundIds = new Set(
+                  allFoundReports.map((report) => report.lostReportId),
+              );
+
+              openCases = lostReports.filter(
+                  (report) =>
+                      !report.finalFoundVerdict &&
+                      report.status === "missing" &&
+                      !foundIds.has(report.id),
+              );
+              boardCases = lostReports
+                  .filter(
+                      (report) =>
+                          foundIds.has(report.id) || report.finalFoundVerdict,
+                  )
+                  .sort((a, b) => {
+                      if (a.finalFoundVerdict && !b.finalFoundVerdict) return 1;
+                      if (!a.finalFoundVerdict && b.finalFoundVerdict) return -1;
+                      return (
+                          new Date(b.updatedAt || b.createdAt || 0) -
+                          new Date(a.updatedAt || a.createdAt || 0)
+                      );
+                  });
+
+              renderStats();
+              mountCards(
+                  "missing-grid",
+                  openCases,
+                  "missing",
+                  "No active missing cases",
+                  "New bulletins will appear here as soon as a case is reported.",
+              );
+              mountCards(
+                  "found-grid",
+                  boardCases,
+                  "found",
+                  "No sightings or closures yet",
+                  "When the community submits leads or a case closes, it will surface here.",
+              );
+              initTabs();
+            })();
+
+            function cardImageMarkup(report) {
+                if (report.photo) {
+                    return (
+                        '<img class="case-card__photo" src="' +
+                        Utils.escapeHtml(report.photo) +
+                        '" alt="' +
+                        Utils.escapeHtml(report.name) +
+                        '">'
+                    );
+                }
+
+                return `
+        <div class="case-card__placeholder" aria-hidden="true">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      `;
+            }
+
+            function describeLead(report) {
+                const related = allFoundReports.filter(
+                    (item) => item.lostReportId === report.id,
+                );
+                const verified = related.some((item) => item.verified);
+
+                if (report.finalFoundVerdict) {
+                    return { text: "Closed and verified", support: true };
+                }
+
+                if (verified) {
+                    return {
+                        text: "Verified sighting received",
+                        support: true,
+                    };
+                }
+
+                if (related.length > 0) {
+                    return {
+                        text:
+                            related.length +
+                            " pending lead" +
+                            (related.length > 1 ? "s" : ""),
+                        support: false,
+                    };
+                }
+
+                return { text: "Awaiting credible leads", support: false };
+            }
+
+            function renderCaseCard(report, mode) {
+                const lead = describeLead(report);
+                const statusLabel = report.finalFoundVerdict
+                    ? "Closed"
+                    : mode === "found"
+                      ? "Lead Active"
+                      : "Urgent";
+                const statusClass =
+                    report.finalFoundVerdict || lead.support
+                        ? "case-card__status case-card__status--support"
+                        : "case-card__status";
+                const signalClass = lead.support
+                    ? "case-card__signal case-card__signal--support"
+                    : "case-card__signal";
+                const description =
+                    Utils.escapeHtml(
+                        (
+                            report.description || "No description provided yet."
+                        ).slice(0, 150),
+                    ) + ((report.description || "").length > 150 ? "…" : "");
+
+                return `
+        <article class="case-card" data-id="${Utils.escapeHtml(report.id)}" tabindex="0" role="link" aria-label="Open case for ${Utils.escapeHtml(report.name)}">
+          <div class="${statusClass}">${statusLabel}</div>
+          <div class="case-card__top">
+            ${cardImageMarkup(report)}
+            <div>
+              <span class="case-card__kicker">Case file</span>
+              <h3 class="case-card__name">${Utils.escapeHtml(report.name)}</h3>
+              <p class="case-card__desc">${description}</p>
+            </div>
+          </div>
+          <div class="case-card__meta">
+            <div class="case-card__row"><span>Last Seen</span><strong>${Utils.escapeHtml(report.lastSeenLocation || "Unknown")}</strong></div>
+            <div class="case-card__row"><span>Clothing</span><strong>${Utils.escapeHtml(report.lastSeenClothes || "Not listed")}</strong></div>
+            <div class="case-card__row"><span>Reported</span><strong>${Utils.timeAgo(report.createdAt)}</strong></div>
+            <div class="${signalClass}">${Utils.escapeHtml(lead.text)}</div>
+          </div>
+        </article>
+      `;
+            }
+
+            function mountCards(
+                containerId,
+                reports,
+                mode,
+                emptyTitle,
+                emptyBody,
+            ) {
+                const container = document.getElementById(containerId);
+
+                if (!reports.length) {
+                    container.innerHTML = `
+          <div class="empty-board" style="grid-column: 1 / -1;">
+            <div>
+              <strong>${emptyTitle}</strong>
+              <p>${emptyBody}</p>
+            </div>
+          </div>
+        `;
+                    return;
+                }
+
+                container.innerHTML = reports
+                    .map((report) => renderCaseCard(report, mode))
+                    .join("");
+                container.querySelectorAll(".case-card").forEach((card) => {
+                    const openCard = () => {
+                        window.location.href =
+                            "report-detail.html?id=" +
+                            encodeURIComponent(card.dataset.id);
+                    };
+
+                    card.addEventListener("click", openCard);
+                    card.addEventListener("keydown", (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openCard();
+                        }
+                    });
+                });
+            }
+
+            function renderStats() {
+                const verifiedSightings = allFoundReports.filter(
+                    (report) => report.verified,
+                ).length;
+                const totalLeads = allFoundReports.length;
+                const closedCases = lostReports.filter(
+                    (report) => report.finalFoundVerdict,
+                ).length;
+
+                document.getElementById("headline-open-count").textContent =
+                    openCases.length;
+                document.getElementById("headline-sighting-count").textContent =
+                    totalLeads;
+                document.getElementById("metric-open").textContent =
+                    openCases.length;
+                document.getElementById("metric-closed").textContent =
+                    closedCases;
+                document.getElementById("metric-leads").textContent =
+                    verifiedSightings + " / " + totalLeads;
+            }
+
+            function initTabs() {
+                document
+                    .getElementById("tabs")
+                    .addEventListener("click", (event) => {
+                        const button = event.target.closest(".bullet-tab");
+                        if (!button) return;
+
+                        const tabName = button.dataset.tab;
+                        document
+                            .querySelectorAll(".bullet-tab")
+                            .forEach((tab) => {
+                                tab.classList.toggle(
+                                    "bullet-tab--active",
+                                    tab === button,
+                                );
+                                tab.setAttribute(
+                                    "aria-selected",
+                                    tab === button ? "true" : "false",
+                                );
+                            });
+
+                        document
+                            .querySelectorAll(".tab-panel")
+                            .forEach((panel) => {
+                                panel.classList.toggle(
+                                    "tab-panel--active",
+                                    panel.id === "tab-" + tabName,
+                                );
+                            });
+                    });
+            }
+
+        </script>
+    </body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Missing — Khujo</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <div id="toast-container" class="toast-container"></div>
+
+  <main class="page-content">
+    <div class="container" style="max-width:640px">
+      <div class="page-header">
+        <div class="page-header__left">
+          <a href="index.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back
+          </a>
+          <h1 class="page-title">Report Missing Person</h1>
+        </div>
+      </div>
+
+      <!-- Family Quick Select -->
+      <div id="family-picker-section" hidden>
+        <div class="section-header">
+          <div class="section-title">Quick select from family</div>
+          <button class="btn btn--ghost btn--sm" id="clear-selection-btn" hidden>Clear selection</button>
+        </div>
+        <div class="family-picker" id="family-picker"></div>
+        <div style="margin-bottom:var(--s6)"></div>
+      </div>
+
+      <!-- Report Form -->
+      <form class="form-card form-stack" id="report-form" novalidate>
+
+        <div class="form-group">
+          <label class="form-label">Photo <span>*</span></label>
+          <div class="photo-upload" id="photo-upload-wrap">
+            <label class="photo-upload__preview" id="photo-preview" for="photo-input" title="Click to upload photo">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </label>
+            <input type="file" id="photo-input" accept="image/*" />
+            <span style="font-size:12px;color:var(--text-3)">Latest known photo (optional)</span>
+          </div>
+          <input type="hidden" id="photo-data" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name <span>*</span></label>
+          <input class="form-input" type="text" id="name" placeholder="Enter full name" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Physical Description <span>*</span></label>
+          <textarea class="form-textarea" id="description" rows="3"
+            placeholder="Age, height, build, hair, eye colour, distinguishing marks…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="last-seen-location">Last Seen Location <span>*</span></label>
+          <input class="form-input" type="text" id="last-seen-location"
+                 placeholder="e.g. Mirpur-10, Dhaka" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="last-seen-clothes">Clothes When Last Seen</label>
+          <input class="form-input" type="text" id="last-seen-clothes"
+                 placeholder="e.g. White shirt, blue jeans, black shoes" />
+        </div>
+
+        <div id="form-error" class="form-error" hidden></div>
+
+        <div style="display:flex;gap:var(--s3);justify-content:flex-end">
+          <a href="index.html" class="btn btn--outline">Cancel</a>
+          <button type="submit" class="btn btn--danger" id="submit-btn">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/alerts.js"></script>
+  <script>
+    if (!Auth.guard()) throw new Error('redirect');
+    Utils.renderNav();
+
+    let selectedPhotoData = null;
+    let selectedFamilyId  = null;
+
+    // ── Family Picker (async) ─────────────────────────────────
+    (async () => {
+      try {
+        const family = await API.getFamilyMembers();
+        if (family.length === 0) return;
+
+        const section  = document.getElementById('family-picker-section');
+        const picker   = document.getElementById('family-picker');
+        section.hidden = false;
+
+        picker.innerHTML = family.map(m =>
+          Utils.renderPersonCard(m, 'family', { selectable: true })
+        ).join('');
+
+        picker.querySelectorAll('.id-card__select-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id     = btn.dataset.id;
+            const member = family.find(m => m.id === id);
+            if (!member) return;
+
+            picker.querySelectorAll('.id-card').forEach(c => c.classList.remove('id-card--selected'));
+            btn.closest('.id-card').classList.add('id-card--selected');
+
+            document.getElementById('name').value        = member.name        || '';
+            document.getElementById('description').value = member.description || '';
+
+            if (member.photo) {
+              selectedPhotoData = member.photo;
+              const preview = document.getElementById('photo-preview');
+              preview.innerHTML = `<img src="${member.photo}" alt="Photo">`;
+              document.getElementById('photo-data').value = member.photo;
+            }
+
+            selectedFamilyId = id;
+            document.getElementById('clear-selection-btn').hidden = false;
+          });
+        });
+
+        document.getElementById('clear-selection-btn').addEventListener('click', () => {
+          picker.querySelectorAll('.id-card').forEach(c => c.classList.remove('id-card--selected'));
+          document.getElementById('name').value          = '';
+          document.getElementById('description').value   = '';
+          document.getElementById('photo-preview').innerHTML = `
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>`;
+          document.getElementById('photo-data').value = '';
+          selectedPhotoData = null;
+          selectedFamilyId  = null;
+          document.getElementById('clear-selection-btn').hidden = true;
+        });
+      } catch (err) {
+        // Family members not available — that's OK, continue without picker
+      }
+    })();
+
+    // ── Photo Upload ──────────────────────────────────────────
+    document.getElementById('photo-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const data = await Utils.fileToBase64(file);
+        selectedPhotoData = data;
+        document.getElementById('photo-data').value = data;
+        const preview = document.getElementById('photo-preview');
+        preview.innerHTML = `<img src="${data}" alt="Preview">`;
+      } catch (err) {
+        Alerts.showToast('Could not process image. Please try another file.', 'danger');
+      }
+    });
+
+    // ── Form Submission ───────────────────────────────────────
+    document.getElementById('report-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name     = document.getElementById('name').value.trim();
+      const desc     = document.getElementById('description').value.trim();
+      const location = document.getElementById('last-seen-location').value.trim();
+      const clothes  = document.getElementById('last-seen-clothes').value.trim();
+      const errEl    = document.getElementById('form-error');
+      const btn      = document.getElementById('submit-btn');
+
+      errEl.hidden = true;
+
+      if (!name) {
+        errEl.textContent = 'Full name is required.';
+        errEl.hidden = false;
+        document.getElementById('name').focus();
+        return;
+      }
+      if (!desc) {
+        errEl.textContent = 'Physical description is required.';
+        errEl.hidden = false;
+        document.getElementById('description').focus();
+        return;
+      }
+      if (!location) {
+        errEl.textContent = 'Last seen location is required.';
+        errEl.hidden = false;
+        document.getElementById('last-seen-location').focus();
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Submitting…';
+
+      try {
+        const report = await API.addLostReport({
+          familyMemberId: selectedFamilyId,
+          name,
+          photo:            selectedPhotoData || null,
+          description:      desc,
+          lastSeenLocation: location,
+          lastSeenClothes:  clothes,
+        });
+
+        Alerts.push(
+          Alerts.TYPES.LOST_REPORTED,
+          `${name} has been reported missing near ${location}.`,
+          report.id
+        );
+
+        window.location.href = 'report-detail.html?id=' + encodeURIComponent(report.id);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+        btn.disabled    = false;
+        btn.textContent = 'Submit Report';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Individual Report — Khujo</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <div id="toast-container" class="toast-container"></div>
+  <div id="modal-container"></div>
+
+  <main class="page-content">
+    <div class="container" id="report-container">
+      <!-- Rendered by JS -->
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/alerts.js"></script>
+  <script>
+    if (!Auth.guard()) throw new Error('redirect');
+    Utils.renderNav();
+
+    const params = new URLSearchParams(window.location.search);
+    const reportId = params.get('id');
+    const session = Auth.getSession();
+
+    async function render() {
+      const container = document.getElementById('report-container');
+
+      let reportData;
+      try {
+        reportData = await API.getLostReportById(reportId);
+      } catch {
+        container.innerHTML = `
+          <div class="empty-state" style="margin-top:var(--s10)">
+            <div class="empty-state__title">Report not found</div>
+            <div class="empty-state__body">This individual report may have been removed.</div>
+            <a href="index.html" class="btn btn--outline" style="margin-top:var(--s4)">Back to bulletin</a>
+          </div>`;
+        return;
+      }
+
+      const report = reportData;
+      const isOwner = session && session.id === report.reporterId;
+      const foundReports = (reportData.sightings || [])
+        .sort((a, b) => (b.verified ? 1 : 0) - (a.verified ? 1 : 0));
+
+      const photoEl = report.photo
+        ? `<img src="${Utils.escapeHtml(report.photo)}" alt="${Utils.escapeHtml(report.name)}" class="case-hero__photo">`
+        : `<div class="case-hero__photo--placeholder">
+             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+               <circle cx="12" cy="7" r="4"/>
+             </svg>
+           </div>`;
+
+      let statusBadge = '';
+      if (report.finalFoundVerdict) {
+        statusBadge = `<span class="badge badge--success">CLOSED — FOUND</span>`;
+      } else if (report.status === 'found') {
+        statusBadge = `<span class="badge badge--success">FOUND</span>`;
+      } else {
+        statusBadge = `<span class="badge badge--danger">MISSING</span>`;
+      }
+
+      const foundHtml = foundReports.length === 0
+        ? `<div class="empty-state" style="padding:var(--s8) var(--s4)">
+             <div class="empty-state__title">No sightings reported yet</div>
+             <div class="empty-state__body">If you have seen this person, please use the button below to report a sighting.</div>
+           </div>`
+        : foundReports.map((foundReport) => {
+            const proofEl = foundReport.proofPhoto
+              ? `<img src="${Utils.escapeHtml(foundReport.proofPhoto)}" alt="Proof" class="found-card__photo">`
+              : `<div class="found-card__photo--placeholder">
+                   <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                     <polyline points="21 15 16 10 5 21"/>
+                   </svg>
+                 </div>`;
+
+            const verifyBtn = isOwner && !foundReport.verified && !report.finalFoundVerdict
+              ? `<button class="btn btn--success btn--sm verify-btn" data-found-id="${Utils.escapeHtml(foundReport.id)}">Verify</button>`
+              : '';
+
+            const badge = foundReport.verified
+              ? `<span class="badge badge--success">Verified</span>`
+              : `<span class="badge badge--warning">Unverified</span>`;
+
+            return `
+              <div class="found-card ${foundReport.verified ? 'found-card--verified' : 'found-card--unverified'}"
+                   data-found-id="${Utils.escapeHtml(foundReport.id)}">
+                ${proofEl}
+                <div class="found-card__body">
+                  <div class="found-card__header">
+                    ${badge}
+                    <span class="found-card__time">${Utils.timeAgo(foundReport.createdAt)}</span>
+                    ${verifyBtn}
+                  </div>
+                  <div class="found-card__desc">${Utils.escapeHtml(foundReport.description)}</div>
+                  <div class="found-card__contact">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8 8.09a16 16 0 0 0 6 6l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    ${Utils.escapeHtml(foundReport.contactInfo)}
+                  </div>
+                </div>
+              </div>`;
+          }).join('');
+
+      let actionBar = '';
+      if (!report.finalFoundVerdict) {
+        actionBar = `
+          <div style="display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s4)">
+            <button class="btn btn--outline" id="report-found-btn">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Report Sighting
+            </button>
+            ${isOwner ? `
+              <button class="btn btn--success" id="verdict-btn">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Mark as FOUND
+              </button>` : ''}
+          </div>`;
+      } else {
+        actionBar = `
+          <div class="verdict-banner">
+            <div class="verdict-text">
+              <div style="font-size:13px;font-weight:600;color:var(--success)">Report Closed</div>
+              <div style="font-size:12px;color:var(--text-2);margin-top:2px">This person has been found and the report has been closed by the reporter.</div>
+            </div>
+            <span class="badge badge--success">FOUND</span>
+          </div>`;
+      }
+
+      container.innerHTML = `
+        <div class="page-header">
+          <div class="page-header__left">
+            <a href="index.html" class="back-link">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Back to bulletin
+            </a>
+          </div>
+        </div>
+
+        <div class="case-hero">
+          ${photoEl}
+          <div class="case-hero__body">
+            <div style="margin-bottom:var(--s3)">
+              <span class="badge badge--neutral">Individual Report</span>
+            </div>
+            <h1 class="case-hero__name">${Utils.escapeHtml(report.name)}</h1>
+            <div class="case-hero__meta">
+              ${statusBadge}
+              <span class="badge badge--neutral">Reported ${Utils.timeAgo(report.createdAt)}</span>
+            </div>
+            <div class="case-detail-grid">
+              <div class="case-detail-item">
+                <div class="case-detail-label">Last seen location</div>
+                <div class="case-detail-value">${Utils.escapeHtml(report.lastSeenLocation)}</div>
+              </div>
+              <div class="case-detail-item">
+                <div class="case-detail-label">Clothes</div>
+                <div class="case-detail-value">${Utils.escapeHtml(report.lastSeenClothes || '—')}</div>
+              </div>
+              <div class="case-detail-item" style="grid-column:1/-1">
+                <div class="case-detail-label">Description</div>
+                <div class="case-detail-value">${Utils.escapeHtml(report.description)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">
+            Sighting Reports
+            <span class="badge badge--neutral" style="margin-left:var(--s2)">${foundReports.length}</span>
+          </div>
+        </div>
+        <div class="form-stack" id="found-list">${foundHtml}</div>
+        ${actionBar}
+      `;
+
+      container.querySelectorAll('.verify-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const foundId = btn.dataset.foundId;
+          try {
+            await API.verifyFoundReport(foundId);
+            Alerts.push(
+              Alerts.TYPES.FOUND_VERIFIED,
+              `A sighting report has been verified.`,
+              reportId
+            );
+            render();
+          } catch (err) {
+            Alerts.showToast(err.message, 'danger');
+          }
+        });
+      });
+
+      const verdictBtn = document.getElementById('verdict-btn');
+      if (verdictBtn) {
+        verdictBtn.addEventListener('click', openVerdictModal);
+      }
+
+      const reportFoundBtn = document.getElementById('report-found-btn');
+      if (reportFoundBtn) {
+        reportFoundBtn.addEventListener('click', openFoundModal);
+      }
+    }
+
+    let foundPhotoData = null;
+
+    function openFoundModal() {
+      const modalContainer = document.getElementById('modal-container');
+      foundPhotoData = null;
+
+      modalContainer.innerHTML = `
+        <div class="modal-overlay" id="found-modal-overlay">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="found-modal-title">
+            <div class="modal__header">
+              <div class="modal__title" id="found-modal-title">Report Sighting</div>
+              <button class="modal__close" id="found-modal-close">&times;</button>
+            </div>
+            <div class="modal__body">
+              <div class="form-group">
+                <label class="form-label">Proof Photo</label>
+                <div class="photo-upload">
+                  <label class="photo-upload__preview" id="found-photo-preview" for="found-photo-input" title="Click to upload">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </label>
+                  <input type="file" id="found-photo-input" accept="image/*" />
+                  <span style="font-size:12px;color:var(--text-3)">Optional photo evidence</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="found-desc">Description <span style="color:var(--danger)">*</span></label>
+                <textarea class="form-textarea" id="found-desc" rows="3"
+                  placeholder="Where and when did you see this person? What was their condition?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="found-contact">Your Contact Info <span style="color:var(--danger)">*</span></label>
+                <input class="form-input" type="text" id="found-contact"
+                       placeholder="Phone number or name of authority" />
+              </div>
+              <div id="found-modal-error" class="form-error" hidden></div>
+            </div>
+            <div class="modal__footer">
+              <button class="btn btn--outline" id="found-modal-cancel">Cancel</button>
+              <button class="btn btn--primary" id="found-modal-submit">Submit Sighting</button>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('found-modal-close').addEventListener('click', closeModal);
+      document.getElementById('found-modal-cancel').addEventListener('click', closeModal);
+      document.getElementById('found-modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('found-modal-overlay')) closeModal();
+      });
+
+      document.getElementById('found-photo-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const data = await Utils.fileToBase64(file, 600, 400);
+          foundPhotoData = data;
+          document.getElementById('found-photo-preview').innerHTML =
+            `<img src="${data}" alt="Preview">`;
+        } catch {
+          Alerts.showToast('Could not process image.', 'danger');
+        }
+      });
+
+      document.getElementById('found-modal-submit').addEventListener('click', async () => {
+        const desc = document.getElementById('found-desc').value.trim();
+        const contact = document.getElementById('found-contact').value.trim();
+        const errEl = document.getElementById('found-modal-error');
+        errEl.hidden = true;
+
+        if (!desc) {
+          errEl.textContent = 'Please describe where you saw this person.';
+          errEl.hidden = false;
+          return;
+        }
+        if (!contact) {
+          errEl.textContent = 'Contact information is required.';
+          errEl.hidden = false;
+          return;
+        }
+
+        try {
+          await API.addFoundReport({
+            lostReportId: reportId,
+            proofPhoto: foundPhotoData || null,
+            description: desc,
+            contactInfo: contact,
+          });
+
+          Alerts.push(
+            Alerts.TYPES.FOUND_REPORTED,
+            `A sighting has been reported.`,
+            reportId
+          );
+
+          closeModal();
+          render();
+        } catch (err) {
+          errEl.textContent = err.message;
+          errEl.hidden = false;
+        }
+      });
+
+      document.getElementById('found-desc').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('modal-container').innerHTML = '';
+    }
+
+    async function openVerdictModal() {
+      const reportData = await API.getLostReportById(reportId);
+      const report = reportData;
+      const modalContainer = document.getElementById('modal-container');
+      modalContainer.innerHTML = `
+        <div class="modal-overlay" id="verdict-modal-overlay">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal__header">
+              <div class="modal__title">Confirm — Mark as FOUND</div>
+              <button class="modal__close" id="verdict-close">&times;</button>
+            </div>
+            <div class="modal__body">
+              <p style="font-size:14px;color:var(--text-1);line-height:1.6">
+                You are about to close this report and confirm that
+                <strong>${Utils.escapeHtml(report.name)}</strong> has been found.
+                This action cannot be undone.
+              </p>
+            </div>
+            <div class="modal__footer">
+              <button class="btn btn--outline" id="verdict-cancel">Cancel</button>
+              <button class="btn btn--success" id="verdict-confirm">Yes, Mark as FOUND</button>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('verdict-close').addEventListener('click', closeModal);
+      document.getElementById('verdict-cancel').addEventListener('click', closeModal);
+      document.getElementById('verdict-modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('verdict-modal-overlay')) closeModal();
+      });
+
+      document.getElementById('verdict-confirm').addEventListener('click', async () => {
+        try {
+          await API.updateLostReport(reportId, {
+            status: 'found',
+            finalFoundVerdict: true,
+          });
+          Alerts.push(
+            Alerts.TYPES.CASE_CLOSED,
+            `${report.name} has been found. Report closed.`,
+            reportId
+          );
+          closeModal();
+          render();
+        } catch (err) {
+          Alerts.showToast(err.message, 'danger');
+        }
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

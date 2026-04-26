@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Family Member — Khujo</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <div id="toast-container" class="toast-container"></div>
+
+  <main class="page-content">
+    <div class="container" style="max-width:520px">
+      <div class="page-header">
+        <div class="page-header__left">
+          <a href="profile.html" class="back-link">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Profile
+          </a>
+          <h1 class="page-title" id="page-heading">Add Family Member</h1>
+        </div>
+      </div>
+
+      <form class="form-card form-stack" id="family-form" novalidate>
+
+        <div class="form-group">
+          <label class="form-label">Photo</label>
+          <div class="photo-upload">
+            <label class="photo-upload__preview" id="photo-preview" for="photo-input" title="Click to upload">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </label>
+            <input type="file" id="photo-input" accept="image/*" />
+            <span style="font-size:12px;color:var(--text-3)">Recent photo (optional)</span>
+          </div>
+          <input type="hidden" id="photo-data" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name <span>*</span></label>
+          <input class="form-input" type="text" id="name" placeholder="Full name" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="relationship">Relationship <span>*</span></label>
+          <select class="form-select" id="relationship">
+            <option value="">Select relationship…</option>
+            <option value="Son">Son</option>
+            <option value="Daughter">Daughter</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Father">Father</option>
+            <option value="Mother">Mother</option>
+            <option value="Brother">Brother</option>
+            <option value="Sister">Sister</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Description</label>
+          <textarea class="form-textarea" id="description" rows="3"
+            placeholder="Age, height, build, hair colour, any distinguishing features…"></textarea>
+        </div>
+
+        <div id="form-error" class="form-error" hidden></div>
+
+        <div style="display:flex;gap:var(--s3);justify-content:flex-end">
+          <a href="profile.html" class="btn btn--outline">Cancel</a>
+          <button type="submit" class="btn btn--primary" id="save-btn">Save Member</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/alerts.js"></script>
+  <script>
+    if (!Auth.guard()) throw new Error('redirect');
+    Utils.renderNav();
+
+    const params   = new URLSearchParams(window.location.search);
+    const editId   = params.get('edit');
+    let photoData  = null;
+    let editMember = null;
+
+    // ── Edit mode: pre-fill form (async) ──────────────────────
+    (async () => {
+      if (!editId) return;
+      try {
+        const members = await API.getFamilyMembers();
+        editMember = members.find(m => m.id === editId);
+        if (editMember) {
+          document.getElementById('page-heading').textContent = 'Edit Family Member';
+          document.getElementById('name').value         = editMember.name         || '';
+          document.getElementById('relationship').value = editMember.relationship || '';
+          document.getElementById('description').value  = editMember.description  || '';
+          if (editMember.photo) {
+            photoData = editMember.photo;
+            document.getElementById('photo-data').value = editMember.photo;
+            document.getElementById('photo-preview').innerHTML =
+              `<img src="${editMember.photo}" alt="Photo">`;
+          }
+        }
+      } catch {
+        // Edit member not found — continue as add mode
+      }
+    })();
+
+    // ── Photo upload ──────────────────────────────────────────
+    document.getElementById('photo-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const data = await Utils.fileToBase64(file);
+        photoData = data;
+        document.getElementById('photo-data').value = data;
+        document.getElementById('photo-preview').innerHTML = `<img src="${data}" alt="Preview">`;
+      } catch {
+        Alerts.showToast('Could not process image.', 'danger');
+      }
+    });
+
+    // ── Form submit ───────────────────────────────────────────
+    document.getElementById('family-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name         = document.getElementById('name').value.trim();
+      const relationship = document.getElementById('relationship').value;
+      const description  = document.getElementById('description').value.trim();
+      const errEl        = document.getElementById('form-error');
+      const btn          = document.getElementById('save-btn');
+
+      errEl.hidden = true;
+
+      if (!name) {
+        errEl.textContent = 'Full name is required.';
+        errEl.hidden = false;
+        document.getElementById('name').focus();
+        return;
+      }
+      if (!relationship) {
+        errEl.textContent = 'Please select a relationship.';
+        errEl.hidden = false;
+        document.getElementById('relationship').focus();
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        if (editId && editMember) {
+          await API.updateFamilyMember(editId, { name, relationship, description, photo: photoData });
+          Alerts.showToast(`${name} updated.`, 'success');
+        } else {
+          await API.addFamilyMember({ name, relationship, description, photo: photoData || null });
+          Alerts.showToast(`${name} added to your family list.`, 'success');
+        }
+        window.location.href = 'profile.html';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+        btn.disabled    = false;
+        btn.textContent = 'Save Member';
+      }
+    });
+  </script>
+</body>
+</html>

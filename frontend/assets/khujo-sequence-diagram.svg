@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1700" viewBox="0 0 1000 1700">
+  <defs>
+    <style>
+      .title { font: 700 18px Arial, sans-serif; fill: #1f2937; }
+      .label { font: 14px Arial, sans-serif; fill: #374151; }
+      .small { font: 12px Arial, sans-serif; fill: #4b5563; }
+      .boxText { font: 14px Arial, sans-serif; fill: #374151; }
+      .line { stroke: #6b7280; stroke-width: 2; }
+      .life { stroke: #94a3b8; stroke-width: 2; }
+      .msg { stroke: #111827; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .ret { stroke: #6b7280; stroke-width: 1.5; stroke-dasharray: 6 6; fill: none; marker-end: url(#arrowLite); }
+      .node { fill: #111827; }
+      .actorA { fill: #f0abfc; }
+      .actorB { fill: #67e8f9; }
+      .appBox { fill: #fff7ed; stroke: #fb923c; stroke-width: 2; }
+      .storeBox { fill: #ecfeff; stroke: #22d3ee; stroke-width: 2; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#111827"/>
+    </marker>
+    <marker id="arrowLite" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="1700" fill="#ffffff"/>
+  <text x="500" y="40" text-anchor="middle" class="title">Khujo Main User Flow Sequence Diagram</text>
+
+  <g transform="translate(90,80)">
+    <circle cx="0" cy="0" r="10" class="actorA"/>
+    <line x1="0" y1="10" x2="0" y2="40" class="line"/>
+    <line x1="-18" y1="20" x2="18" y2="20" class="line"/>
+    <line x1="0" y1="40" x2="-16" y2="65" class="line"/>
+    <line x1="0" y1="40" x2="16" y2="65" class="line"/>
+    <text x="0" y="88" text-anchor="middle" class="label">Family / Reporter</text>
+  </g>
+
+  <g transform="translate(300,80)">
+    <circle cx="0" cy="0" r="10" class="actorB"/>
+    <line x1="0" y1="10" x2="0" y2="40" class="line"/>
+    <line x1="-18" y1="20" x2="18" y2="20" class="line"/>
+    <line x1="0" y1="40" x2="-16" y2="65" class="line"/>
+    <line x1="0" y1="40" x2="16" y2="65" class="line"/>
+    <text x="0" y="88" text-anchor="middle" class="label">Witness / Public User</text>
+  </g>
+
+  <g transform="translate(620,52)">
+    <rect x="-70" y="0" rx="10" ry="10" width="140" height="44" class="appBox"/>
+    <text x="0" y="27" text-anchor="middle" class="boxText">Khujo Web App</text>
+  </g>
+
+  <g transform="translate(890,52)">
+    <rect x="-82" y="0" rx="10" ry="10" width="164" height="44" class="storeBox"/>
+    <text x="0" y="27" text-anchor="middle" class="boxText">Local Device Storage</text>
+  </g>
+
+  <line x1="90" y1="120" x2="90" y2="1600" class="life"/>
+  <line x1="300" y1="120" x2="300" y2="1600" class="life"/>
+  <line x1="620" y1="120" x2="620" y2="1600" class="life"/>
+  <line x1="890" y1="120" x2="890" y2="1600" class="life"/>
+
+  <g fill="#111827">
+    <circle cx="90" cy="200" r="7" class="node"/>
+    <circle cx="620" cy="200" r="7" class="node"/>
+    <circle cx="890" cy="200" r="7" class="node"/>
+    <circle cx="90" cy="320" r="7" class="node"/>
+    <circle cx="620" cy="320" r="7" class="node"/>
+    <circle cx="890" cy="320" r="7" class="node"/>
+    <circle cx="90" cy="470" r="7" class="node"/>
+    <circle cx="620" cy="470" r="7" class="node"/>
+    <circle cx="890" cy="470" r="7" class="node"/>
+    <circle cx="300" cy="650" r="7" class="node"/>
+    <circle cx="620" cy="650" r="7" class="node"/>
+    <circle cx="890" cy="650" r="7" class="node"/>
+    <circle cx="300" cy="840" r="7" class="node"/>
+    <circle cx="620" cy="840" r="7" class="node"/>
+    <circle cx="890" cy="840" r="7" class="node"/>
+    <circle cx="620" cy="1020" r="7" class="node"/>
+    <circle cx="300" cy="1020" r="7" class="node"/>
+    <circle cx="620" cy="1200" r="7" class="node"/>
+    <circle cx="890" cy="1200" r="7" class="node"/>
+    <circle cx="620" cy="1370" r="7" class="node"/>
+    <circle cx="890" cy="1370" r="7" class="node"/>
+    <circle cx="90" cy="1510" r="7" class="node"/>
+    <circle cx="300" cy="1510" r="7" class="node"/>
+    <circle cx="620" cy="1510" r="7" class="node"/>
+  </g>
+
+  <path d="M90 170 H620" class="msg"/>
+  <text x="355" y="160" text-anchor="middle" class="small">Open profile and save personal details</text>
+  <path d="M620 190 H890" class="msg"/>
+  <text x="755" y="180" text-anchor="middle" class="small">Store profile and identity documents</text>
+  <path d="M890 215 H620" class="ret"/>
+  <text x="755" y="208" text-anchor="middle" class="small">Confirm saved</text>
+  <path d="M620 240 H90" class="ret"/>
+  <text x="355" y="232" text-anchor="middle" class="small">Show saved profile</text>
+
+  <path d="M90 290 H620" class="msg"/>
+  <text x="355" y="280" text-anchor="middle" class="small">Add family member details</text>
+  <path d="M620 310 H890" class="msg"/>
+  <text x="755" y="300" text-anchor="middle" class="small">Store family member record</text>
+  <path d="M890 335 H620" class="ret"/>
+  <text x="755" y="328" text-anchor="middle" class="small">Confirm saved</text>
+  <path d="M620 360 H90" class="ret"/>
+  <text x="355" y="352" text-anchor="middle" class="small">Show family list</text>
+
+  <path d="M90 440 H620" class="msg"/>
+  <text x="355" y="430" text-anchor="middle" class="small">Submit missing person report</text>
+  <path d="M620 460 H890" class="msg"/>
+  <text x="755" y="450" text-anchor="middle" class="small">Save missing case</text>
+  <path d="M620 495 H890" class="msg"/>
+  <text x="755" y="486" text-anchor="middle" class="small">Create notification entry</text>
+  <path d="M890 525 H620" class="ret"/>
+  <text x="755" y="518" text-anchor="middle" class="small">Confirm case stored</text>
+  <path d="M620 560 H90" class="ret"/>
+  <text x="355" y="552" text-anchor="middle" class="small">Publish case on bulletin board</text>
+
+  <path d="M300 620 H620" class="msg"/>
+  <text x="460" y="610" text-anchor="middle" class="small">Browse bulletin board and open case</text>
+  <path d="M620 640 H890" class="msg"/>
+  <text x="755" y="630" text-anchor="middle" class="small">Load missing case details</text>
+  <path d="M890 670 H620" class="ret"/>
+  <text x="755" y="663" text-anchor="middle" class="small">Return case and existing sightings</text>
+  <path d="M620 700 H300" class="ret"/>
+  <text x="460" y="692" text-anchor="middle" class="small">Show case detail page</text>
+
+  <path d="M300 810 H620" class="msg"/>
+  <text x="460" y="800" text-anchor="middle" class="small">Submit sighting report</text>
+  <path d="M620 830 H890" class="msg"/>
+  <text x="755" y="820" text-anchor="middle" class="small">Save sighting report</text>
+  <path d="M620 865 H890" class="msg"/>
+  <text x="755" y="856" text-anchor="middle" class="small">Create notification entry</text>
+  <path d="M890 895 H620" class="ret"/>
+  <text x="755" y="888" text-anchor="middle" class="small">Confirm sighting stored</text>
+  <path d="M620 930 H300" class="ret"/>
+  <text x="460" y="922" text-anchor="middle" class="small">Show submission success</text>
+
+  <path d="M300 990 H620" class="msg"/>
+  <text x="460" y="980" text-anchor="middle" class="small">Open case updates</text>
+  <path d="M620 1010 H890" class="msg"/>
+  <text x="755" y="1000" text-anchor="middle" class="small">Load case and new sightings</text>
+  <path d="M890 1040 H620" class="ret"/>
+  <text x="755" y="1033" text-anchor="middle" class="small">Return updated case timeline</text>
+  <path d="M620 1070 H90" class="ret"/>
+  <text x="355" y="1062" text-anchor="middle" class="small">Show unverified sighting</text>
+
+  <path d="M90 1340 H620" class="msg"/>
+  <text x="355" y="1330" text-anchor="middle" class="small">Verify sighting and mark person found</text>
+  <path d="M620 1360 H890" class="msg"/>
+  <text x="755" y="1350" text-anchor="middle" class="small">Update sighting as verified</text>
+  <path d="M620 1395 H890" class="msg"/>
+  <text x="755" y="1386" text-anchor="middle" class="small">Update case status to closed/found</text>
+  <path d="M620 1430 H890" class="msg"/>
+  <text x="755" y="1421" text-anchor="middle" class="small">Create closure notification</text>
+  <path d="M890 1460 H620" class="ret"/>
+  <text x="755" y="1453" text-anchor="middle" class="small">Confirm updates saved</text>
+  <path d="M620 1490 H90" class="ret"/>
+  <text x="355" y="1482" text-anchor="middle" class="small">Show closed case</text>
+  <path d="M620 1540 H300" class="ret"/>
+  <text x="460" y="1532" text-anchor="middle" class="small">Display closed/found status on bulletin board</text>
+</svg>
