@@ -1,12 +1,6 @@
-/* ============================================================
-   API — All backend fetch() calls for Khujo
-   Replaces localStorage (Store) with real HTTP requests.
-   ============================================================ */
-
 const API = (() => {
   const BASE = "/api";
 
-  // ── Token Management ──────────────────────────────────────
   function getToken() {
     return localStorage.getItem("khujo_token");
   }
@@ -19,7 +13,6 @@ const API = (() => {
     localStorage.removeItem("khujo_token");
   }
 
-  // ── Generic fetch wrapper ─────────────────────────────────
   async function request(method, path, body) {
     const options = {
       method,
@@ -45,11 +38,9 @@ const API = (() => {
     return res.json();
   }
 
-  // ── Auth ───────────────────────────────────────���──────────
   async function login(username, password) {
     const data = await request("POST", "/auth/login", { username, password });
     setToken(data.token);
-    // Cache user info for quick access
     localStorage.setItem("khujo_user", JSON.stringify(data.user));
     return data;
   }
@@ -69,7 +60,6 @@ const API = (() => {
     try {
       await request("POST", "/auth/logout");
     } catch {
-      // Ignore errors on logout
     }
     clearToken();
     localStorage.removeItem("khujo_user");
@@ -79,7 +69,6 @@ const API = (() => {
     return request("GET", "/auth/me");
   }
 
-  // Quick cached user (no network call)
   function getCachedUser() {
     try {
       return JSON.parse(localStorage.getItem("khujo_user"));
@@ -88,7 +77,6 @@ const API = (() => {
     }
   }
 
-  // ── Profile ───────────────────────────────────────────────
   async function getProfile() {
     return request("GET", "/profile");
   }
@@ -97,7 +85,6 @@ const API = (() => {
     return request("PUT", "/profile", data);
   }
 
-  // ── Family Members ────────────────────────────────────────
   async function getFamilyMembers() {
     return request("GET", "/family");
   }
@@ -114,7 +101,6 @@ const API = (() => {
     return request("DELETE", "/family/" + id);
   }
 
-  // ── Lost Reports ──────────────────────────────────────────
   async function getLostReports() {
     return request("GET", "/lost-reports");
   }
@@ -131,7 +117,6 @@ const API = (() => {
     return request("PUT", "/lost-reports/" + id, data);
   }
 
-  // ── Found Reports (Sightings) ───────────────��────────────
   async function getFoundReports(lostReportId) {
     const query = lostReportId ? "?lostReportId=" + lostReportId : "";
     return request("GET", "/found-reports" + query);
@@ -145,7 +130,6 @@ const API = (() => {
     return request("PATCH", "/found-reports/" + id + "/verify");
   }
 
-  // ── Alerts ────────────────────────────────────────────────
   async function getAlerts() {
     return request("GET", "/alerts");
   }
