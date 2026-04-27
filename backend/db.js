@@ -1,7 +1,3 @@
-/* ============================================================
-   DATABASE — SQLite setup using sql.js (pure JavaScript)
-   ============================================================ */
-
 const initSqlJs = require("sql.js");
 const fs = require("fs");
 const path = require("path");
@@ -10,17 +6,14 @@ const DB_PATH = path.join(__dirname, "khujo.db");
 
 let db = null;
 
-// Save database to file after every write
 function save() {
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
 
-// Initialize the database (call this before starting the server)
 async function init() {
   const SQL = await initSqlJs();
 
-  // Load existing database or create new one
   if (fs.existsSync(DB_PATH)) {
     const fileBuffer = fs.readFileSync(DB_PATH);
     db = new SQL.Database(fileBuffer);
@@ -28,7 +21,6 @@ async function init() {
     db = new SQL.Database();
   }
 
-  // Create all tables
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -112,15 +104,10 @@ async function init() {
   return db;
 }
 
-// ── Helper functions that wrap sql.js into a simpler API ────
-
-// sql.js refuses `undefined` binds — coerce to null so COALESCE-style
-// "patch only the fields the client sent" updates work.
 function normalize(params) {
   return params.map((p) => (p === undefined ? null : p));
 }
 
-// Run a query that returns rows (SELECT)
 function all(sql, params = []) {
   const stmt = db.prepare(sql);
   stmt.bind(normalize(params));
@@ -132,16 +119,14 @@ function all(sql, params = []) {
   return rows;
 }
 
-// Run a query that returns one row
 function get(sql, params = []) {
   const rows = all(sql, params);
   return rows.length > 0 ? rows[0] : null;
 }
 
-// Run a query that modifies data (INSERT, UPDATE, DELETE)
 function run(sql, params = []) {
   db.run(sql, normalize(params));
-  save(); // persist to file after every write
+  save();
 }
 
 module.exports = { init, all, get, run, save };
