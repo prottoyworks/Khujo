@@ -1,7 +1,3 @@
-/* ============================================================
-   UTILS — Shared helpers
-   ============================================================ */
-
 const Utils = (() => {
 
   function generateId() {
@@ -34,7 +30,6 @@ const Utils = (() => {
     return new Date(isoString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
-  // Resize image file via canvas and return base64 data URI
   function fileToBase64(file, maxW = 400, maxH = 500) {
     return new Promise((resolve, reject) => {
       if (!file || !file.type.startsWith('image/')) {
@@ -63,7 +58,6 @@ const Utils = (() => {
     });
   }
 
-  // Inject the shared nav bar into #nav-placeholder
   function renderNav() {
     const placeholder = document.getElementById('nav-placeholder');
     if (!placeholder) return;
@@ -106,7 +100,6 @@ const Utils = (() => {
       </nav>
     `;
 
-    // Alert dropdown toggle — load alerts from API
     const bellBtn       = document.getElementById('alert-bell-btn');
     const alertDropdown = document.getElementById('alert-dropdown');
     if (bellBtn && alertDropdown) {
@@ -116,7 +109,6 @@ const Utils = (() => {
         alertDropdown.hidden = !isHidden;
         if (!isHidden) return;
 
-        // Fetch alerts from backend
         try {
           const alerts = await API.getAlerts();
           alertDropdown.innerHTML = Alerts.renderDropdownFromData(alerts);
@@ -132,8 +124,6 @@ const Utils = (() => {
     }
   }
 
-  // Render a person ID card (used in multiple pages)
-  // type: 'lost' | 'family'
   function renderPersonCard(data, type, opts = {}) {
     const { clickable = false, selectable = false, selected = false } = opts;
     const photo = data.photo
@@ -158,7 +148,7 @@ const Utils = (() => {
 
     let subtitle = '';
     if (type === 'lost') {
-      // Sighting info can be passed via opts.sightingCount / opts.hasVerified
+
       if (opts.sightingCount > 0) {
         subtitle = opts.hasVerified
           ? `<span class="badge badge--success badge--sm">Verified sighting</span>`
