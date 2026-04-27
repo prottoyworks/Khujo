@@ -1,7 +1,3 @@
-/* ============================================================
-   SEED — Populate the database with demo data
-   ============================================================ */
-
 const crypto = require("crypto");
 const db = require("./db");
 
@@ -12,14 +8,12 @@ function hoursAgo(h) {
 async function seed() {
   await db.init();
 
-  // Only seed if no users exist
   const existing = db.get("SELECT COUNT(*) as count FROM users");
   if (existing.count > 0) {
     console.log("Database already has data. Skipping seed.");
     process.exit(0);
   }
 
-  // ── Create demo user ──────────────────────────────────────
   const adminId = crypto.randomUUID();
   db.run(
     "INSERT INTO users (id, username, password, full_name, phone) VALUES (?, ?, ?, ?, ?)",
@@ -27,7 +21,6 @@ async function seed() {
   );
   console.log("Created admin user (username: admin, password: admin)");
 
-  // ── Seed lost reports ─────────────────────────────────────
   const reports = [
     {
       id: "seed-001",
@@ -76,7 +69,6 @@ async function seed() {
   }
   console.log(`Inserted ${reports.length} lost reports`);
 
-  // ── Seed found reports (sightings) ────────────────────────
   db.run(
     `INSERT INTO found_reports (id, lost_report_id, description, contact_info, verified, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
