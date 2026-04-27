@@ -24,7 +24,6 @@
         </div>
       </div>
 
-      <!-- Identity Documents -->
       <div class="form-card" style="margin-bottom:var(--s6)">
         <div class="section-header" style="margin-bottom:var(--s4)">
           <div class="section-title">Identity Documents</div>
@@ -58,7 +57,6 @@
         </p>
       </div>
 
-      <!-- Profile Info -->
       <div class="form-card form-stack" style="margin-bottom:var(--s6)">
         <div class="section-title" style="margin-bottom:var(--s2)">Personal Information</div>
         <div class="form-group">
@@ -74,7 +72,6 @@
         </div>
       </div>
 
-      <!-- Family Members -->
       <div class="section-header">
         <div class="section-title">Family Members</div>
         <a href="family-add.html" class="btn btn--outline btn--sm">
@@ -91,7 +88,6 @@
     </div>
   </main>
 
-  <!-- Confirm Delete Modal -->
   <div id="modal-container"></div>
 
   <script src="js/api.js"></script>
@@ -102,10 +98,8 @@
     if (!Auth.guard()) throw new Error('redirect');
     Utils.renderNav();
 
-    // Keep a local cache of family members for the delete modal
     let familyCache = [];
 
-    // ── Load saved profile ────────────────────────────────────
     async function loadProfile() {
       try {
         const p = await API.getProfile();
@@ -121,11 +115,9 @@
             `<img src="${p.selfiePhoto}" alt="Selfie">`;
         }
       } catch {
-        // Profile not loaded — that's OK
       }
     }
 
-    // ── Photo uploads ─────────────────────────────────────────
     document.getElementById('nid-frame').addEventListener('click', () =>
       document.getElementById('nid-input').click()
     );
@@ -159,7 +151,6 @@
       }
     });
 
-    // ── Save profile info ─────────────────────────────────────
     document.getElementById('save-profile-btn').addEventListener('click', async () => {
       const fullName = document.getElementById('full-name').value.trim();
       const phone    = document.getElementById('phone').value.trim();
@@ -171,7 +162,6 @@
       }
     });
 
-    // ── Family grid ───────────────────────────────────────────
     async function renderFamilyGrid() {
       const grid = document.getElementById('family-grid');
 
