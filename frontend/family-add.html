@@ -89,7 +89,6 @@
     let photoData  = null;
     let editMember = null;
 
-    // ── Edit mode: pre-fill form (async) ──────────────────────
     (async () => {
       if (!editId) return;
       try {
@@ -108,11 +107,9 @@
           }
         }
       } catch {
-        // Edit member not found — continue as add mode
       }
     })();
 
-    // ── Photo upload ──────────────────────────────────────────
     document.getElementById('photo-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -126,7 +123,6 @@
       }
     });
 
-    // ── Form submit ───────────────────────────────────────────
     document.getElementById('family-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name         = document.getElementById('name').value.trim();
