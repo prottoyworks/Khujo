@@ -1,11 +1,3 @@
-/* ============================================================
-   ALERTS — Toast notifications + bell-dropdown rendering
-   The backend creates persistent alerts on its own (see
-   routes/lost-reports.js, routes/found-reports.js). This module
-   handles client-side feedback (toasts) and renders the alert
-   list returned by GET /api/alerts.
-   ============================================================ */
-
 const Alerts = (() => {
   const TYPES = {
     LOST_REPORTED: 'LOST_REPORTED',
@@ -66,10 +58,7 @@ const Alerts = (() => {
     setTimeout(dismiss, 4000);
   }
 
-  // Backend already persists the alert as part of the same write
-  // (POST /lost-reports, /found-reports, etc.). push() is a UX
-  // shortcut that surfaces an instant toast — no server round-trip.
-  function push(type, message /*, relatedId */) {
+  function push(type, message) {
     const tone = TONE[type] || 'info';
     showToast(message, tone);
   }
