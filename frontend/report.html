@@ -24,7 +24,6 @@
         </div>
       </div>
 
-      <!-- Family Quick Select -->
       <div id="family-picker-section" hidden>
         <div class="section-header">
           <div class="section-title">Quick select from family</div>
@@ -34,7 +33,6 @@
         <div style="margin-bottom:var(--s6)"></div>
       </div>
 
-      <!-- Report Form -->
       <form class="form-card form-stack" id="report-form" novalidate>
 
         <div class="form-group">
@@ -97,7 +95,6 @@
     let selectedPhotoData = null;
     let selectedFamilyId  = null;
 
-    // ── Family Picker (async) ─────────────────────────────────
     (async () => {
       try {
         const family = await API.getFamilyMembers();
@@ -151,11 +148,9 @@
           document.getElementById('clear-selection-btn').hidden = true;
         });
       } catch (err) {
-        // Family members not available — that's OK, continue without picker
       }
     })();
 
-    // ── Photo Upload ──────────────────────────────────────────
     document.getElementById('photo-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -170,7 +165,6 @@
       }
     });
 
-    // ── Form Submission ───────────────────────────────────────
     document.getElementById('report-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name     = document.getElementById('name').value.trim();
