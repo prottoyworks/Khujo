@@ -25,7 +25,6 @@
 
       <div id="auth-error" class="form-error" hidden></div>
 
-      <!-- ── Sign in panel ──────────────────────────────────── -->
       <form class="form-stack tab-panel tab-panel--active" id="panel-signin"
             role="tabpanel" aria-labelledby="tab-signin" novalidate>
         <div class="form-group">
@@ -44,7 +43,6 @@
         </button>
       </form>
 
-      <!-- ── Create account panel ───────────────────────────── -->
       <form class="form-stack tab-panel" id="panel-signup"
             role="tabpanel" aria-labelledby="tab-signup" novalidate>
         <div class="form-group">
@@ -85,7 +83,6 @@
 
   <script src="js/api.js"></script>
   <script>
-    // If already logged in, skip the form entirely.
     if (API.getToken()) {
       window.location.replace('index.html');
     }
@@ -94,7 +91,6 @@
     const PASSWORD_MIN = 6;
     const errEl = document.getElementById('auth-error');
 
-    // ── Tab switching ──────────────────────────────────────
     const tabs = {
       signin: {
         btn: document.getElementById('tab-signin'),
@@ -130,7 +126,6 @@
       });
     }
 
-    // ── Sign in ────────────────────────────────────────────
     document.getElementById('panel-signin').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.currentTarget;
@@ -155,7 +150,6 @@
       }
     });
 
-    // ── Create account ─────────────────────────────────────
     document.getElementById('panel-signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.currentTarget;
@@ -167,8 +161,6 @@
       const confirm  = document.getElementById('signup-password2').value;
       errEl.hidden = true;
 
-      // Client-side validation mirrors backend rules so the user gets
-      // instant feedback instead of a server round-trip on typos.
       if (!fullName) {
         showError('Please enter your full name.');
         return;
